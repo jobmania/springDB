@@ -54,9 +54,8 @@ public class MemberRepositoryV0 {
                 member.setMoney(rs.getInt("money"));
                 return member;
             }else {
-                throw new NoSuchElementException("member not found memberId=" + memberId); // 세부적인 예외 메세지를 적자!  
+                throw new NoSuchElementException("member not found memberId=" + memberId); // 세부적인 예외 메세지를 적자!
             }
-
 
         } catch (SQLException e) {
             log.error("db error",e);
