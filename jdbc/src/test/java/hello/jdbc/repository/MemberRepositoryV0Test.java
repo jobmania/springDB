@@ -6,17 +6,20 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
+import java.util.NoSuchElementException;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class MemberRepositoryV0Test {
 
     MemberRepositoryV0 repository = new MemberRepositoryV0();
-    @Test
+    @Test  // 테스트는 반복해서 수행할 수 있어야 된다!!!
     void crud() throws SQLException {
+
         // save
-        Member member = new Member("memberV4", 10000);
+        Member member = new Member("memberV100", 10000);
         repository.save(member);
 
         // findById
@@ -24,6 +27,21 @@ class MemberRepositoryV0Test {
         log.info("findMember={}", findMember);
         log.info("member != findMember{}", member == findMember);
         log.info("member equals findMember{}", member.equals(findMember) );
-        Assertions.assertThat(findMember).isEqualTo(member);
+        assertThat(findMember).isEqualTo(member);
+
+
+        // UPDATE
+        repository.update(member.getMemberId(), 20000);
+        Member updateMember = repository.findById(member.getMemberId());
+        assertThat(updateMember.getMoney()).isEqualTo(20000);
+
+        // DELETE
+        repository.delete(member.getMemberId());
+        // 삭제후 데이터가 없기때문에 설정한 error message 받기
+        assertThatThrownBy(() -> repository.findById(member.getMemberId())).
+                isInstanceOf(NoSuchElementException.class);
+
     }
+
+
 }
