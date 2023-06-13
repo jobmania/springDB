@@ -10,12 +10,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * 트랜잭션, 파라미터고려, 풀을 종료!!
+ * 트랜잭션, 파라미터 연동, 풀을  고려한 종료!!
  * */
 @RequiredArgsConstructor
 @Slf4j
 public class MemberServiceV2 {
-    private final DataSource dataSource;
+    private final DataSource dataSource; // 데이터소스에서 커넥션을 들고 와야되기때문~
     private final MemberRepositoryV2 memberRepository;
 
     public void accountTransfer(String fromId, String toId, int money) throws SQLException {
@@ -29,13 +29,12 @@ public class MemberServiceV2 {
             // 커밋 , OR 롤백
             con.commit();  // 성공시 커밋!
         }catch (Exception e){
-            con.rollback();
+            con.rollback(); // 실패!
             throw new IllegalStateException(e);
         }finally {
             release(con);
 
         }
-
 
     }
 
@@ -44,10 +43,16 @@ public class MemberServiceV2 {
         Member toMember = memberRepository.findById(con, toId);
 
 
-        memberRepository.update(fromId, fromMember.getMoney() - money);
+        memberRepository.update(con, fromId, fromMember.getMoney() - money);
         validation(toMember);
+        validation(fromMember);
+        memberRepository.update(con, toId, toMember.getMoney() + money);
+    }
 
-        memberRepository.update(toId, toMember.getMoney() + money);
+    private static void validation(Member toMember) {
+        if(toMember.getMemberId().equals("ex")){
+            throw new IllegalStateException("이체 중 에외 발생");
+        }
     }
 
     private static void release(Connection con) {
@@ -59,13 +64,6 @@ public class MemberServiceV2 {
                 log.info("error",e);
             }
 
-
-        }
-    }
-
-    private static void validation(Member toMember) {
-        if(toMember.getMemberId().equals("ex")){
-            throw new IllegalStateException("이체 중 에외 발생");
         }
     }
 }

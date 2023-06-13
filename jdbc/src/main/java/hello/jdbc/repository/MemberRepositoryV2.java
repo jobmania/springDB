@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 
 
 /**
- * JDBC - ConnectionParam
+ * JDBC - ConnectionParam 커넥션을 파라미터로 받지롱~~
  * */
 @Slf4j
 public class MemberRepositoryV2 {
@@ -44,6 +44,8 @@ public class MemberRepositoryV2 {
         }
 
     }
+
+
 
     public Member findById(String memberId) throws SQLException {
         String sql = "select * from member where member_id = ? ";
@@ -95,7 +97,7 @@ public class MemberRepositoryV2 {
             log.error("db error",e);
             throw e;
         }finally {
-            // 커넥션은 여기서 닫지 않는다!!
+            // 커넥션은 여기서 닫지 않는다!! 리포지토리에서는 커넥션을 지속한다~
             JdbcUtils.closeResultSet(rs);
             JdbcUtils.closeStatement(pstmt);
 //            JdbcUtils.closeConnection(con);
@@ -104,33 +106,27 @@ public class MemberRepositoryV2 {
     }
 
 
-
-
     public void update(String memberId, int money) throws SQLException {
-        String sql = "update member set money=? where member_id = ?";
+        String sql = "update member set money=? where member_id=?";
         Connection con = null;
         PreparedStatement pstmt = null;
-
         try {
-
             con = getConnection();
             pstmt = con.prepareStatement(sql);
-            pstmt.setInt(1,money);
-            pstmt.setString(2,memberId);
-            int resultSize = pstmt.executeUpdate();
-            log.info("resultSize={}",resultSize);
-
-        }catch (SQLException e){
-            log.error("db error",e);
+            pstmt.setInt(1, money);
+            pstmt.setString(2, memberId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            log.error("db error", e);
             throw e;
-        }finally {
-            close(con,pstmt,null);
+        } finally {
+            close(con, pstmt, null);
         }
-
     }
 
-    public void update(Connection con, String memberId, int money) throws SQLException {
+    public void update(Connection con,String memberId, int money) throws SQLException {
         String sql = "update member set money=? where member_id = ?";
+
         PreparedStatement pstmt = null;
 
         try {
@@ -138,21 +134,17 @@ public class MemberRepositoryV2 {
             pstmt = con.prepareStatement(sql);
             pstmt.setInt(1,money);
             pstmt.setString(2,memberId);
-            int resultSize = pstmt.executeUpdate();
-            log.info("resultSize={}",resultSize);
+             pstmt.executeUpdate();
+
 
         }catch (SQLException e){
             log.error("db error",e);
             throw e;
         }finally {
-            // connect close x
             JdbcUtils.closeStatement(pstmt);
         }
 
     }
-
-
-
 
 
 
