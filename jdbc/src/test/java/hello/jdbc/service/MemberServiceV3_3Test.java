@@ -2,41 +2,78 @@ package hello.jdbc.service;
 
 import hello.jdbc.domain.Member;
 import hello.jdbc.repository.MemberRepositoryV3;
+import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 
 import static hello.jdbc.connection.ConnectionConst.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
- * 트랜잭션 - 커넥션 파라미터 전달 방식 동기화
+ * 트랜잭션 - @Transactional AOP
  * */
-class MemberServiceV3_2Test {
+
+@Slf4j
+@SpringBootTest
+class MemberServiceV3_3Test {
     public static final String MEMBER_A = "memberA";
     public static final String MEMBER_B = "memberB";
     public static final String MEMBER_EX = "ex";
 
+    @Autowired
     private MemberRepositoryV3 memberRepository;
-    private MemberServiceV3_2 memberService;
+    @Autowired
+    private MemberServiceV3_3 memberService;
 
-    @BeforeEach
-    void before(){
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(URL, USERNAME, PASSWORD);
-        memberRepository = new MemberRepositoryV3(dataSource);
 
-        PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
-        memberService = new MemberServiceV3_2(transactionManager, memberRepository);
+    /**
+     * 스프링부트 테스트는 스프링서버를 하나더 띄우는 것이다!
+     * 그래서 빈주입도 해줘야됨!
+     *
+     * */
+
+
+    @TestConfiguration
+    static class TestConfIg {
+        @Bean
+        DataSource dataSource(){
+            return new DriverManagerDataSource(URL, USERNAME, PASSWORD);
+        }
+
+        @Bean
+        PlatformTransactionManager transactionManager(){
+            return new DataSourceTransactionManager(dataSource());
+        }
+
+        @Bean
+        MemberRepositoryV3 MemberRepositoryV3(){
+            return new MemberRepositoryV3(dataSource());
+        }
+
+        @Bean
+        MemberServiceV3_3 memberServiceV3_3(){
+            return new MemberServiceV3_3(MemberRepositoryV3());
+        }
+
+
     }
+
 
     @AfterEach
     void after() throws SQLException {
@@ -46,6 +83,16 @@ class MemberServiceV3_2Test {
     }
 
 
+
+    @Test
+    void AopCheck(){
+        // 의존관꼐 주입시 실제 service가 아닌 프록시 주입됨
+        log.info("memberServcie class={}", memberService.getClass()); // $$EnhancerBySpringCGLIB$$68620b04 -> 프록시
+
+        log.info("memberRRepository class={}", memberRepository.getClass());
+        Assertions.assertThat(AopUtils.isAopProxy(memberService)).isTrue();
+        Assertions.assertThat(AopUtils.isAopProxy(memberRepository)).isFalse();
+    }
 
     @Test
     @DisplayName(" 정상 예제")
