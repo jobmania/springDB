@@ -37,7 +37,7 @@ public class MemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public List<Item> findAll(ItemSearchCond cond) {
+    public List<Item> findAll(ItemSearchCond cond) { // 동적쿼리~
         String itemName = cond.getItemName();
         Integer maxPrice = cond.getMaxPrice();
         return store.values().stream()
