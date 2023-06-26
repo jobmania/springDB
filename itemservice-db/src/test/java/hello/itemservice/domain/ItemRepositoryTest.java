@@ -8,25 +8,45 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest //  main 의 application을 참조하기때문에 config 역시 참조한다.
+@Transactional
+@SpringBootTest
 class ItemRepositoryTest {
 
     @Autowired
     ItemRepository itemRepository;
 
+//    @Autowired
+//    PlatformTransactionManager transactionManager;
+//    TransactionStatus status;
+//
+//    @BeforeEach
+//    void beforeEach(){
+//        // 트랜잭션 시작
+//        status = transactionManager.getTransaction(new DefaultTransactionAttribute());
+//    }
+
     @AfterEach
-    void afterEach() {
-        //MemoryItemRepository 의 경우 제한적으로 사용
-        if (itemRepository instanceof MemoryItemRepository) {
+    void afterEach(){
+        // MemoryItemRepository 일경우 제한적으로 사용
+        if(itemRepository instanceof MemoryItemRepository){
             ((MemoryItemRepository) itemRepository).clearStore();
         }
+
+        // 트랜잭션 롤백!
+//        transactionManager.rollback(status);
     }
 
+
+
+
+//    @Commit
+//    @Transactional
     @Test
     void save() {
         //given
