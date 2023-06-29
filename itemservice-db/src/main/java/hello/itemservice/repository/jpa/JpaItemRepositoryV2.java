@@ -45,10 +45,10 @@ public class JpaItemRepositoryV2 implements ItemRepository {
 
 //        이후 Query DSL, 동적쿼리로 개선될 수 있음
         if(StringUtils.hasText(itemName) && maxPrice != null){
-//            return repository.findByItemNameLikeAndPriceLessThanEqual(itemName, maxPrice);
-            return repository.findItems(itemName, maxPrice);
+//            return repository.findByItemNameLikeAndPriceLessThanEqual("%" +itemName+"%", maxPrice);
+            return repository.findItems("%" + itemName + "%", maxPrice);
         }else if(StringUtils.hasText(itemName)){
-            return repository.findByItemNameLike(itemName);
+            return repository.findByItemNameLike("%" +itemName + "%");
         }else if(maxPrice !=null){
             return repository.findByPriceLessThanEqual(maxPrice);
         }else {
