@@ -1,6 +1,8 @@
 package hello.itemservice.repository.jpa;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.itemservice.domain.Item;
 import hello.itemservice.domain.QItem;
@@ -50,8 +52,7 @@ public class JpaItemRepositoryV3 implements ItemRepository {
         return Optional.ofNullable(findItem);
     }
 
-    @Override
-    public List<Item> findAll(ItemSearchCond cond) {
+    public List<Item> findOldAll(ItemSearchCond cond) {
 
         String itemName = cond.getItemName();
         Integer maxPrice = cond.getMaxPrice();
@@ -75,5 +76,34 @@ public class JpaItemRepositoryV3 implements ItemRepository {
                 .fetch();
 
         return result;
+    }
+
+    // 깔끔하게 리랙토링..  미쳤따 미쳤어 동적쿼리
+    @Override
+    public List<Item> findAll(ItemSearchCond cond) {
+
+        String itemName = cond.getItemName();
+        Integer maxPrice = cond.getMaxPrice();
+
+        return query
+                .select(item)
+                .from(item)
+                .where(likeItemName(itemName),maxPrice(maxPrice))
+                .fetch();
+    }
+
+    private BooleanExpression likeItemName(String itemName){
+        if(StringUtils.hasText(itemName)){
+            return item.itemName.like("%" + itemName + "%");
+        }
+        return null;
+    }
+
+    private BooleanExpression maxPrice(Integer maxPrice) {
+
+        if(maxPrice != null){
+            return item.price.loe(maxPrice); // 작거나 같다.
+        }
+        return null;
     }
 }
