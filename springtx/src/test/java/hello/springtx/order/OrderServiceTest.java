@@ -31,7 +31,7 @@ class OrderServiceTest {
         //then
         Order findOrder = orderRepository.findById(order.getId()).get();
         assertThat(findOrder.getPayStatus()).isEqualTo("완료");
-        // 커밋 
+        // 커밋
     }
 
 
