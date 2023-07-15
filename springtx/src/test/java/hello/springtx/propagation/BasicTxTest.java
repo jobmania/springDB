@@ -93,4 +93,24 @@ public class BasicTxTest {
 
     }
 
+    @Test
+    void inner_commit(){
+        // 상대적으로 먼저 실행됬기때문에 외부
+        log.info("외부 트랜잭션 시작" );
+        TransactionStatus outer = txManager.getTransaction(new DefaultTransactionAttribute());
+        log.info("outer.isNewTransaction()={}",outer.isNewTransaction());
+
+        // 상대적으로 나중 실행됬기때문에 내부
+        log.info("내부 트랜잭션ㅅ ㅣ작 ");
+        TransactionStatus inner = txManager.getTransaction(new DefaultTransactionAttribute());
+        log.info("inner.isNewTransaction()={}",inner.isNewTransaction());
+        log.info("내부 트랜잭션 커밋");
+        txManager.commit(inner);
+
+        log.info("외부 트랜잭션 커밋");
+        txManager.commit(outer);
+
+
+    }
+
 }
